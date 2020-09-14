@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weiliang.project.enterprise.mapper.BatchMenuMapper">
+
+    <resultMap type="BatchMenu" id="BatchMenuResult">
+    	<id     property="batchId"        column="batch_id"       />
+        <result property="batchName"      column="batch_name"     />
+        <result property="description"   column="description"    />
+        <result property="orderNum"      column="order_num"      />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectVo">
+        select batch_id, batch_name, description, order_num, create_by, create_time, update_by, update_time
+		from batch_menu
+    </sql>
+
+    <select id="selectMenuList" parameterType="BatchMenu" resultMap="BatchMenuResult">
+        <include refid="selectVo"/>
+        <where>
+            <if test="batchName != null and batchName != ''">
+                AND batch_name like concat('%', #{batchName}, '%')
+            </if>
+        </where>
+        order by order_num
+    </select>
+
+    <select id="selectMenuById" parameterType="Long" resultMap="BatchMenuResult">
+        <include refid="selectVo"/>
+        where batch_id = #{batchId}
+    </select>
+
+    <insert id="insertMenu" parameterType="BatchMenu">
+        insert into batch_menu (
+			<if test="batchName != null and batchName != '' ">batch_name,</if>
+            <if test="description != null and description != '' ">description,</if>
+			<if test="orderNum != null and orderNum != '' ">order_num,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+			create_time
+        )values(
+			<if test="batchName != null and batchName != ''">#{batchName},</if>
+            <if test="description != null and description != ''">#{description},</if>
+			<if test="orderNum != null and orderNum != ''">#{orderNum},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+            sysdate()
+		)
+    </insert>
+
+    <update id="updateMenu" parameterType="BatchMenu">
+        update batch_menu
+        <set>
+            <if test="batchName != null and batchName != ''">batch_name = #{batchName},</if>
+            <if test="description != null and description != ''">description = #{description},</if>
+            <if test="orderNum != null and orderNum != ''">order_num = #{orderNum},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+ 			update_time = sysdate()
+        </set>
+        where batch_id = #{batchId}
+    </update>
+
+    <delete id="deleteMenuByIds" parameterType="Long">
+        delete from batch_menu where batch_id in
+        <foreach item="batchId" collection="array" open="(" separator="," close=")">
+        	#{batchId}
+        </foreach>
+    </delete>
+
+</mapper>

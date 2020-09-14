@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weiliang.project.enterprise.mapper.DrinkMenuMapper">
+
+    <resultMap type="DrinkMenu" id="DrinkMenuResult">
+    	<id     property="menuId"        column="menu_id"        />
+        <result property="menuName"      column="menu_name"      />
+        <result property="temp"          column="temp"           />
+        <result property="specs"         column="specs"          />
+        <result property="price"         column="price"          />
+        <result property="classify"      column="classify"       />
+        <result property="orderNum"      column="order_num"      />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectVo">
+        select menu_id, menu_name, temp, specs, price, classify, order_num, create_by, create_time, update_by, update_time
+		from drink_menu
+    </sql>
+
+    <select id="selectMenuList" parameterType="DrinkMenu" resultMap="DrinkMenuResult">
+        <include refid="selectVo"/>
+        <where>
+			<if test="menuName != null and menuName != ''">
+				AND menu_name like concat('%', #{menuName}, '%')
+			</if>
+            <if test="classify != null and classify != ''">
+                AND classify = #{classify}
+            </if>
+		</where>
+		order by classify,order_num
+    </select>
+
+    <select id="selectMenuById" parameterType="Long" resultMap="DrinkMenuResult">
+        <include refid="selectVo"/>
+        where menu_id = #{menuId}
+    </select>
+
+    <insert id="insertMenu" parameterType="DrinkMenu">
+        insert into drink_menu (
+			<if test="menuName != null and menuName != '' ">menu_name,</if>
+            <if test="temp != null and temp != '' ">temp,</if>
+            <if test="specs != null and specs != '' ">specs,</if>
+            <if test="price != null and price != '' ">price,</if>
+            <if test="classify != null and classify != '' ">classify,</if>
+			<if test="orderNum != null and orderNum != '' ">order_num,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+ 			create_time
+        )values(
+			<if test="menuName != null and menuName != ''">#{menuName},</if>
+            <if test="temp != null and temp != ''">#{temp},</if>
+            <if test="specs != null and specs != ''">#{specs},</if>
+            <if test="price != null and price != ''">#{price},</if>
+            <if test="classify != null and classify != ''">#{classify},</if>
+			<if test="orderNum != null and orderNum != ''">#{orderNum},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+ 			sysdate()
+		)
+    </insert>
+
+    <update id="updateMenu" parameterType="DrinkMenu">
+        update drink_menu
+        <set>
+            <if test="menuName != null and menuName != ''">menu_name = #{menuName},</if>
+            <if test="temp != null and temp != ''">temp = #{temp},</if>
+            <if test="specs != null and specs != ''">specs = #{specs},</if>
+            <if test="price != null and price != ''">price = #{price},</if>
+            <if test="classify != null and classify != ''">classify = #{classify},</if>
+            <if test="orderNum != null and orderNum != ''">order_num = #{orderNum},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+ 			update_time = sysdate()
+        </set>
+        where menu_id = #{menuId}
+    </update>
+
+    <delete id="deleteMenuByIds" parameterType="Long">
+        delete from drink_menu where menu_id in
+        <foreach item="menuId" collection="array" open="(" separator="," close=")">
+        	#{menuId}
+        </foreach>
+    </delete>
+
+</mapper>

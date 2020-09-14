@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weiliang.project.git.mapper.StockDetailMapper">
+
+	<resultMap type="StockDetail" id="StockDetailResult">
+		<id     property="stockDetailId"   column="stock_detail_id"   />
+		<result property="stockId"    column="stock_id"    />
+		<result property="stockNum"   column="stock_num"   />
+		<result property="remark"     column="remark"      />
+		<result property="createBy"   column="create_by"   />
+		<result property="createTime" column="create_time" />
+		<result property="updateBy"   column="update_by"   />
+		<result property="updateTime" column="update_time" />
+	</resultMap>
+
+	<resultMap id="StockAndStockDetailResult" type="StockDetail" extends="StockDetailResult">
+		<association property="stock" javaType="com.weiliang.project.git.domain.Stock" autoMapping="true">
+			<id column="stock_id" property="stockId"></id>
+			<result column="stock_name" property="stockName"></result>
+			<result column="under_shop" property="underShop"></result>
+		</association>
+	</resultMap>
+
+	<sql id="selectVo">
+        select stock_detail_id, stock_id, stock_num, remark, create_by, create_time, update_by, update_time
+		from stock_detail
+    </sql>
+
+	<select id="selectStockDetailByStockId" parameterType="StockDetail" resultMap="StockAndStockDetailResult">
+		select * from stock_detail as d left join stock as s on d.stock_id=s.stock_id
+		where d.stock_id = #{stockId}
+		<if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+			and date_format(d.create_time,'%y%m%d') &gt;= date_format(#{beginTime},'%y%m%d')
+		</if>
+		<if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+			and date_format(d.create_time,'%y%m%d') &lt;= date_format(#{endTime},'%y%m%d')
+		</if>
+		<!-- 数据范围过滤 -->
+		${dataScope}
+		order by d.create_time desc
+	</select>
+
+	<select id="selectStockDetailById" parameterType="Long" resultMap="StockDetailResult">
+		<include refid="selectVo"/>
+		where stock_detail_id = #{stockDetailId}
+	</select>
+
+ 	<delete id="deleteStockDetailByIds" parameterType="Long">
+ 		delete from stock_detail where stock_detail_id in
+ 		<foreach collection="array" item="stockDetailId" open="(" separator="," close=")">
+ 			#{stockDetailId}
+        </foreach>
+ 	</delete>
+
+	<update id="updateStockDetail" parameterType="StockDetail">
+ 		update stock_detail
+ 		<set>
+			<if test="stockId != null and stockId != ''">stock_id = #{stockId},</if>
+ 			<if test="stockNum != null and stockNum != ''">stock_num = #{stockNum},</if>
+ 			<if test="remark != null and remark != ''">remark = #{remark},</if>
+ 			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+ 			update_time = sysdate()
+ 		</set>
+ 		where stock_detail_id = #{stockDetailId}
+	</update>
+
+ 	<insert id="insertStockDetail" parameterType="StockDetail">
+ 		insert into stock_detail(
+			<if test="stockId != null and stockId != ''">stock_id,</if>
+ 			<if test="stockNum != null and stockNum != ''">stock_num,</if>
+ 			<if test="remark != null and remark != ''">remark,</if>
+ 			<if test="createBy != null and createBy != ''">create_by,</if>
+ 			create_time
+ 		)values(
+			<if test="stockId != null and stockId != ''">#{stockId},</if>
+ 		    <if test="stockNum != null and stockNum != ''">#{stockNum},</if>
+ 			<if test="remark != null and remark != ''">#{remark},</if>
+ 			<if test="createBy != null and createBy != ''">#{createBy},</if>
+ 			sysdate()
+ 		)
+	</insert>
+
+</mapper>

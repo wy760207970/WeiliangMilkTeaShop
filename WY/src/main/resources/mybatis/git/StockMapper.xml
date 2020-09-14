@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weiliang.project.git.mapper.StockMapper">
+
+    <resultMap type="Stock" id="StockResult">
+    	<id     property="stockId"       column="stock_id"       />
+        <result property="stockName"     column="stock_name"     />
+        <result property="underShop"     column="under_shop"     />
+        <result property="stockNum"      column="stock_num"      />
+        <result property="stockUnit"     column="stock_unit"     />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectVo">
+        select s.stock_id, s.stock_name, s.under_shop,
+         (select d.stock_num from stock_detail d where d.stock_id = s.stock_id order by d.create_time desc limit 1) stock_num,
+         s.stock_unit, s.create_by, s.create_time, s.update_by,
+         (select d.create_time from stock_detail d where d.stock_id = s.stock_id order by d.create_time desc limit 1) update_time
+		from stock s
+    </sql>
+
+    <select id="selectStockList" parameterType="Stock" resultMap="StockResult">
+        <include refid="selectVo"/>
+        <where>
+            <if test="underShop != null and underShop != ''">
+                AND under_shop = #{underShop}
+            </if>
+            <if test="stockName != null and stockName != ''">
+                AND stock_name like concat('%', #{stockName}, '%')
+            </if>
+		</where>
+		order by under_shop,stock_id
+    </select>
+
+    <select id="selectStockById" parameterType="Long" resultMap="StockResult">
+        <include refid="selectVo"/>
+        where stock_id = #{stockId}
+    </select>
+
+    <insert id="insertStock" parameterType="Stock">
+        insert into stock (
+			<if test="stockName != null and stockName != '' ">stock_name,</if>
+            <if test="underShop != null and underShop != '' ">under_shop,</if>
+            <if test="stockUnit != null and stockUnit != '' ">stock_unit,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+ 			create_time
+        )values(
+			<if test="stockName != null and stockName != ''">#{stockName},</if>
+            <if test="underShop != null and underShop != ''">#{underShop},</if>
+            <if test="stockUnit != null and stockUnit != ''">#{stockUnit},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+ 			sysdate()
+		)
+    </insert>
+
+    <update id="updateStock" parameterType="Stock">
+        update stock
+        <set>
+            <if test="stockName != null and stockName != ''">stock_name = #{stockName},</if>
+            <if test="underShop != null and underShop != ''">under_shop = #{underShop},</if>
+            <if test="stockUnit != null and stockUnit != ''">stock_unit = #{stockUnit},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+ 			update_time = sysdate()
+        </set>
+        where stock_id = #{stockId}
+    </update>
+
+    <delete id="deleteStockByIds" parameterType="Long">
+        delete from stock where stock_id in
+        <foreach item="stockId" collection="array" open="(" separator="," close=")">
+        	#{stockId}
+        </foreach>
+    </delete>
+
+</mapper>

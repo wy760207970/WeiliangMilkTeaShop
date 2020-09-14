@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weiliang.project.git.mapper.PurchaseMapper">
+
+    <resultMap type="Purchase" id="PurchaseResult">
+    	<id     property="purchaseId"    column="purchase_id"    />
+        <result property="purchaseName"  column="purchase_name" />
+        <result property="underShop"     column="under_shop"     />
+        <result property="purchaseNum"   column="purchase_num"   />
+        <result property="purchaseUnit"  column="purchase_unit"  />
+        <result property="unitPrice"     column="unit_price"     />
+        <result property="totalPrice"    column="total_price"    />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectVo">
+        select purchase_id, purchase_name, under_shop, purchase_num, purchase_unit, unit_price, total_price, create_by, create_time, update_by, update_time
+		from purchase
+    </sql>
+
+    <select id="selectPurchaseList" parameterType="Purchase" resultMap="PurchaseResult">
+        <include refid="selectVo"/>
+        <where>
+            <if test="underShop != null and underShop != ''">
+                AND under_shop = #{underShop}
+            </if>
+            <if test="purchaseName != null and purchaseName != ''">
+                AND purchase_name like concat('%', #{purchaseName}, '%')
+            </if>
+            <if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(create_time,'%y%m%d') &gt;= date_format(#{beginTime},'%y%m%d')
+            </if>
+            <if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+                and date_format(create_time,'%y%m%d') &lt;= date_format(#{endTime},'%y%m%d')
+            </if>
+            <!-- 数据范围过滤 -->
+            ${dataScope}
+		</where>
+		order by under_shop,purchase_id
+    </select>
+
+    <select id="selectPurchaseById" parameterType="Long" resultMap="PurchaseResult">
+        <include refid="selectVo"/>
+        where purchase_id = #{purchaseId}
+    </select>
+
+    <insert id="insertPurchase" parameterType="Purchase">
+        insert into purchase (
+			<if test="purchaseName != null and purchaseName != '' ">purchase_name,</if>
+            <if test="underShop != null and underShop != '' ">under_shop,</if>
+            <if test="purchaseNum != null and purchaseNum != '' ">purchase_num,</if>
+            <if test="purchaseUnit != null and purchaseUnit != '' ">purchase_unit,</if>
+            <if test="unitPrice != null and unitPrice != '' ">unit_price,</if>
+            <if test="totalPrice != null and totalPrice != '' ">total_price,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+ 			create_time
+        )values(
+			<if test="purchaseName != null and purchaseName != ''">#{purchaseName},</if>
+            <if test="underShop != null and underShop != ''">#{underShop},</if>
+            <if test="purchaseNum != null and purchaseNum != ''">#{purchaseNum},</if>
+            <if test="purchaseUnit != null and purchaseUnit != ''">#{purchaseUnit},</if>
+            <if test="unitPrice != null and unitPrice != ''">#{unitPrice},</if>
+            <if test="totalPrice != null and totalPrice != ''">#{totalPrice},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+ 			sysdate()
+		)
+    </insert>
+
+    <update id="updatePurchase" parameterType="Purchase">
+        update purchase
+        <set>
+            <if test="purchaseName != null and purchaseName != ''">purchase_name = #{purchaseName},</if>
+            <if test="underShop != null and underShop != ''">under_shop = #{underShop},</if>
+            <if test="purchaseNum != null and purchaseNum != ''">purchase_num = #{purchaseNum},</if>
+            <if test="purchaseUnit != null and purchaseUnit != ''">purchase_unit = #{purchaseUnit},</if>
+            <if test="unitPrice != null and unitPrice != ''">unit_price = #{unitPrice},</if>
+            <if test="totalPrice != null and totalPrice != ''">total_price = #{totalPrice},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+ 			update_time = sysdate()
+        </set>
+        where purchase_id = #{purchaseId}
+    </update>
+
+    <delete id="deletePurchaseByIds" parameterType="Long">
+        delete from purchase where purchase_id in
+        <foreach item="purchaseId" collection="array" open="(" separator="," close=")">
+        	#{purchaseId}
+        </foreach>
+    </delete>
+
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weiliang.project.order.mapper.OrderItemMapper">
+
+    <resultMap type="OrderItem" id="OrderItemResult">
+    	<id     property="orderItemId"   column="order_item_id"  />
+        <result property="orderNo"       column="order_no"       />
+        <result property="drinkName"     column="drink_name"     />
+        <result property="temp"          column="temp"           />
+        <result property="specs"         column="specs"          />
+        <result property="drinkPrice"    column="drink_price"    />
+        <result property="orderCount"    column="order_count"    />
+    </resultMap>
+
+    <sql id="selectVo">
+        select order_item_id, order_no, drink_name, temp, specs, drink_price, order_count
+		from order_item
+    </sql>
+
+    <select id="selectOrderItemList" parameterType="String" resultMap="OrderItemResult">
+        select order_item_id, order_no, drink_name, temp, specs, drink_price, order_count
+		from order_item
+        where order_no = #{orderNo}
+    </select>
+
+    <insert id="insertOrderItem" parameterType="OrderItem">
+        insert into order_item (
+            <if test="orderNo != null and orderNo != '' ">order_no,</if>
+			<if test="drinkName != null and drinkName != '' ">drink_name,</if>
+            <if test="temp != null and temp != '' ">temp,</if>
+            <if test="specs != null and specs != '' ">specs,</if>
+            <if test="drinkPrice != null and drinkPrice != '' ">drink_price,</if>
+            <if test="orderCount != null and orderCount != '' ">order_count</if>
+        )values(
+            <if test="orderNo != null and orderNo != ''">#{orderNo},</if>
+			<if test="drinkName != null and drinkName != ''">#{drinkName},</if>
+            <if test="temp != null and temp != ''">#{temp},</if>
+            <if test="specs != null and specs != ''">#{specs},</if>
+            <if test="drinkPrice != null and drinkPrice != ''">#{drinkPrice},</if>
+            <if test="orderCount != null and orderCount != ''">#{orderCount}</if>
+		)
+    </insert>
+
+    <delete id="deleteOrderItemByIds" parameterType="Long">
+        delete from order_item where order_item_id in
+        <foreach item="orderItemId" collection="array" open="(" separator="," close=")">
+        	#{orderItemId}
+        </foreach>
+    </delete>
+
+</mapper>

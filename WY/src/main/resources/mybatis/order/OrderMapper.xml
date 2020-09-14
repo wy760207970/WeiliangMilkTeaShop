@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weiliang.project.order.mapper.OrderMapper">
+
+    <resultMap type="Order" id="OrderResult">
+    	<id     property="orderId"       column="order_id"       />
+        <result property="orderNo"       column="order_no"       />
+        <result property="totalPrice"    column="total_price"    />
+        <result property="payStatus"     column="pay_status"     />
+        <result property="payType"       column="pay_type"       />
+        <result property="underShop"     column="under_shop"     />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <resultMap type="com.weiliang.project.order.domain.OrderList" id="OrderListResult">
+        <result column="order_no" property="orderNo"/>
+        <result column="content" property="content"/>
+        <result column="total_price" property="totalPrice"/>
+        <result column="pay_type" property="payType"/>
+        <result column="pay_status" property="payStatus"/>
+        <result property="underShop"     column="under_shop"     />
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectOrderList" parameterType="OrderList" resultMap="OrderListResult">
+        select o.order_no order_no, (select GROUP_CONCAT(i.drink_name,i.specs,'  ',i.temp,'  ￥',i.drink_price,' x ',i.order_count)
+        from order_item i WHERE find_in_set(i.order_no,o.order_no)) as content, o.total_price total_price,
+         o.pay_type pay_type, o.pay_status pay_status, o.under_shop under_shop, o.create_time create_time from `order` o
+        <where>
+            <if test="payStatus != null and payStatus != ''">
+                AND o.pay_status = #{payStatus}
+            </if>
+            <if test="payType != null and payType != ''">
+                AND o.pay_type= #{payType}
+            </if>
+            <if test="underShop != null and underShop != ''">
+                AND o.under_shop= #{underShop}
+            </if>
+            <if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(o.create_time,'%y%m%d') &gt;= date_format(#{beginTime},'%y%m%d')
+            </if>
+            <if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+                and date_format(o.create_time,'%y%m%d') &lt;= date_format(#{endTime},'%y%m%d')
+            </if>
+            <!-- 数据范围过滤 -->
+            ${dataScope}
+		</where>
+		order by o.create_time desc
+    </select>
+
+    <insert id="insertOrder" parameterType="Order">
+        insert into `order` (
+            <if test="orderNo != null and orderNo != '' ">order_no,</if>
+			<if test="totalPrice != null and totalPrice != '' ">total_price,</if>
+            <if test="payStatus != null and payStatus != '' ">pay_status,</if>
+            <if test="payType != null and payType != '' ">pay_type,</if>
+            <if test="underShop != null and underShop != '' ">under_shop,</if>
+			<if test="createBy != null and createBy != ''">create_by,</if>
+ 			create_time
+        )values(
+            <if test="orderNo != null and orderNo != ''">#{orderNo},</if>
+			<if test="totalPrice != null and totalPrice != ''">#{totalPrice},</if>
+            <if test="payStatus != null and payStatus != ''">#{payStatus},</if>
+            <if test="payType != null and payType != ''">#{payType},</if>
+            <if test="underShop != null and underShop != ''">#{underShop},</if>
+			<if test="createBy != null and createBy != ''">#{createBy},</if>
+ 			sysdate()
+		)
+    </insert>
+
+    <delete id="deleteOrderByIds" parameterType="Long">
+        delete from `order` where order_id in
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </delete>
+
+</mapper>

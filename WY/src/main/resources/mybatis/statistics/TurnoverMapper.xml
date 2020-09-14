@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weiliang.project.statistics.mapper.TurnoverMapper">
+
+    <resultMap type="com.weiliang.project.statistics.domain.Turnover" id="ListResult">
+        <result column="statistics_time" property="statisticsTime"/>
+        <result column="under_shop" property="underShop"/>
+        <result column="money" property="money"/>
+    </resultMap>
+
+    <select id="selectByDay" parameterType="Turnover" resultMap="ListResult">
+        SELECT DATE_FORMAT(create_time,'%Y-%m-%d') as statistics_time, under_shop,
+        sum(total_price) money FROM `order`
+        <where>
+            <if test="underShop != null and underShop != ''">
+                AND under_shop= #{underShop}
+            </if>
+            <if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(create_time,'%y%m%d') &gt;= date_format(#{beginTime},'%y%m%d')
+            </if>
+            <if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+                and date_format(create_time,'%y%m%d') &lt;= date_format(#{endTime},'%y%m%d')
+            </if>
+            <!-- 数据范围过滤 -->
+            ${dataScope}
+        </where>
+        GROUP BY under_shop,statistics_time
+        order by under_shop,statistics_time desc
+    </select>
+
+    <select id="selectByWeek" parameterType="Turnover" resultMap="ListResult">
+        SELECT DATE_FORMAT(create_time,'%Y-%u') as statistics_time, under_shop,
+        sum(total_price) money FROM `order`
+        <where>
+            <if test="underShop != null and underShop != ''">
+                AND under_shop= #{underShop}
+            </if>
+            <if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(create_time,'%y%m%d') &gt;= date_format(#{beginTime},'%y%m%d')
+            </if>
+            <if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+                and date_format(create_time,'%y%m%d') &lt;= date_format(#{endTime},'%y%m%d')
+            </if>
+            <!-- 数据范围过滤 -->
+            ${dataScope}
+        </where>
+        GROUP BY under_shop,statistics_time
+        order by under_shop,statistics_time desc
+    </select>
+
+    <select id="selectByMonth" parameterType="Turnover" resultMap="ListResult">
+        SELECT DATE_FORMAT(create_time,'%Y-%m') as statistics_time, under_shop,
+        sum(total_price) money FROM `order`
+        <where>
+            <if test="underShop != null and underShop != ''">
+                AND under_shop= #{underShop}
+            </if>
+            <if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(create_time,'%y%m%d') &gt;= date_format(#{beginTime},'%y%m%d')
+            </if>
+            <if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+                and date_format(create_time,'%y%m%d') &lt;= date_format(#{endTime},'%y%m%d')
+            </if>
+            <!-- 数据范围过滤 -->
+            ${dataScope}
+        </where>
+        GROUP BY under_shop,statistics_time
+        order by under_shop,statistics_time desc
+    </select>
+
+</mapper>
